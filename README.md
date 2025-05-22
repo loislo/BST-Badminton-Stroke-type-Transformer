@@ -20,7 +20,7 @@ Thus, we have stroke clips now.
 ## Data Preprocessing
 1. Make sure your shuttlecock tracking model works well, you can choose the one you like:
     - [TrackNetV3 (using attension)](https://github.com/alenzenx/TrackNetV3) $\Leftarrow$ used in this paper.
-    - [TrackNetV3 (with rectification module)](https://github.com/qaz812345/TrackNetV3)
+    - [TrackNetV3 (with rectification module)](https://github.com/qaz812345/TrackNetV3).
 2. Make sure your [MMPose](https://github.com/open-mmlab/mmpose/tree/main) works well.
     - Set your `venv_prepare_train` virtual environment first for running Human Pose Estimation (HPE) successfully.
     - See `prepare_train_env.txt` as an example based on my setup.
