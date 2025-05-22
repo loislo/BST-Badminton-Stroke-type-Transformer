@@ -1,5 +1,6 @@
 # BST: Badminton Stroke-type Transformer for Skeleton-based Action Recognition in Racket Sports
 [![Static Badge](https://img.shields.io/badge/arXiv-2502.21085-gray?labelColor=%23B31B1B)](https://arxiv.org/abs/2502.21085)
+
 [![Static Badge](https://img.shields.io/badge/Python-3.11-gray?labelColor=%234584B6)](https://www.python.org/downloads/) [![Static Badge](https://img.shields.io/badge/PyTorch-2.4.0%2Bcu121-gray?labelColor=%23EE4C2C)](https://pytorch.org/)
 
 ## Generating Stroke Clips
