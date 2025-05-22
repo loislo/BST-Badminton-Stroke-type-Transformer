@@ -343,7 +343,7 @@ def detect_shuttlecock_by_TrackNetV3_with_attension(
     model_folder=Path("C:/MyResearch/TrackNetV3-main"),
 ):
     '''
-    TrackNetV3 (using attension)
+    TrackNetV3 (using attention)
     https://github.com/alenzenx/TrackNetV3
     '''
     process_args = [
