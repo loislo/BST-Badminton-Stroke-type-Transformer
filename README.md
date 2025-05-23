@@ -65,6 +65,12 @@ Thus, we have collated .npy files now.
     - [TrackNetV3 (with rectification module)](https://github.com/qaz812345/TrackNetV3)
 - Human Pose Estimation
     - [MMPose](https://github.com/open-mmlab/mmpose/tree/main)
+- Classification Models
+    - [ST-GCN](https://github.com/yysijie/st-gcn)
+    - [BlockGCN](https://github.com/ZhouYuxuanYX/BlockGCN)
+    - [SkateFormer](https://github.com/KAIST-VICLab/SkateFormer)
+    - [ProtoGCN](https://github.com/firework8/ProtoGCN)
+    - [TemPose](https://github.com/MagnusPetersenIbh/TemPose-BadmintonActionRecognition)
 - Dataset
     - [ShuttleSet](https://github.com/wywyWang/CoachAI-Projects/tree/main/ShuttleSet)
 - Court Detection (if the dataset does not contain court information)
