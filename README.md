@@ -3,7 +3,13 @@
 
 [![Static Badge](https://img.shields.io/badge/Python-3.11-gray?labelColor=%234584B6)](https://www.python.org/downloads/) [![Static Badge](https://img.shields.io/badge/PyTorch-2.4.0%2Bcu121-gray?labelColor=%23EE4C2C)](https://pytorch.org/)
 
-## Generating Stroke Clips
+## Training Speed
+- On a NVIDIA RTX 4070 Ti Super setup, training BST-3 takes 29 sec per epoch, while training TemPose-TF takes 31 sec per epoch.
+- The following figure shows training BST-3 converges faster than TemPose-TF:
+![Loss Curves](stroke_classification/tensorboard2pyplot/loss_curves.png)
+
+## Reproducing the Results
+### Generating Stroke Clips
 (In `ShuttleSet` folder)
 1. Download the videos from links in `set/match.csv` and put them into `raw_video` folder.
     - `flaw_shot_records.csv` shows some errors in the original [ShuttleSet](https://github.com/wywyWang/CoachAI-Projects/tree/main/ShuttleSet).
@@ -19,7 +25,7 @@
 
 Thus, we have stroke clips now.
 
-## Data Preprocessing
+### Data Preprocessing
 (In `stroke_classification` folder)
 1. Make sure your shuttlecock tracking model works well, you can choose the one you like:
     - [TrackNetV3 (using attension)](https://github.com/alenzenx/TrackNetV3) $\Leftarrow$ used in this paper.
@@ -35,7 +41,7 @@ Thus, we have stroke clips now.
 
 Thus, we have collated .npy files now.
 
-## Training Classification Models
+### Training Classification Models
 (In `stroke_classification` folder)
 - Run each `<architecture_name>_main.py` for training, validating, testing each model, and please check hyper-parameters:
     - `hyp.seq_len`: should be the same as in your dataset.
