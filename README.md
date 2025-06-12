@@ -47,10 +47,10 @@ Thus, we have collated .npy files now.
     - `hyp.seq_len`: should be the same as in your dataset.
     - `train_partial`: `1` for the whole training set.
     - `model_name`
-        - `ShuttlePose_3_3`: **<font color="red">BST-0</font>** in this paper.
-        - `BST_6_2`: **<font color="red">BST-1</font>** in this paper.
-        - `BST_7`: **<font color="red">BST-2</font>** in this paper.
-        - `BST_8`: **<font color="red">BST-3</font>** in this paper.
+        - `ShuttlePose_3_3`: **BST-0** in this paper.
+        - `BST_6_2`: **BST-1** in this paper.
+        - `BST_7`: **BST-2** in this paper.
+        - `BST_8`: **BST-3** in this paper.
     - `in_channels`: `2` for 2D, `3` for 3D.
     - `model_info`: to distinguish your model weights.
     - `serial_no`: to distinguish your model weights when trying different initial weights.
