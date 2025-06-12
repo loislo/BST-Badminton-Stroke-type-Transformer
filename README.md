@@ -12,7 +12,7 @@
 ### Generating Stroke Clips
 (In `ShuttleSet` folder)
 1. Download the videos from links in `set/match.csv` and put them into `raw_video` folder.
-    - `flaw_shot_records.csv` shows some errors in the original [ShuttleSet](https://github.com/wywyWang/CoachAI-Projects/tree/main/ShuttleSet).
+    - `flaw_shot_records.csv` shows some errors in the original [ShuttleSet](https://github.com/wywyWang/CoachAI-Projects/tree/main/ShuttleSet), so please use the modified version in this repository.
     - Append each video ID to the front of its name, such as `<ID> - <name>.mp4`.
 2. Modify `my_raw_video_resolution.csv` to the resolutions you downloaded.
 3. Run `gen_my_dataset.py` 6 (2 players x 3 splitted sets) times, and please check the following settings in the code each time:
