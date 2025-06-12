@@ -4,8 +4,8 @@
 [![Static Badge](https://img.shields.io/badge/Python-3.11-gray?labelColor=%234584B6)](https://www.python.org/downloads/) [![Static Badge](https://img.shields.io/badge/PyTorch-2.4.0%2Bcu121-gray?labelColor=%23EE4C2C)](https://pytorch.org/)
 
 ## Training Speed
-- On a NVIDIA RTX 4070 Ti Super setup, training BST-3 takes 29 sec per epoch, while training TemPose-TF takes 31 sec per epoch.
-- The following figure shows training BST-3 converges faster than TemPose-TF:
+- On a NVIDIA RTX 4070 Ti Super setup, training **BST-3** takes 29 sec per epoch, while training **TemPose-TF** takes 31 sec per epoch.
+- The following figure shows training **BST-3** converges faster than **TemPose-TF**:
 ![Loss Curves](stroke_classification/tensorboard2pyplot/loss_curves.png)
 
 ## Reproducing the Results
@@ -47,10 +47,10 @@ Thus, we have collated .npy files now.
     - `hyp.seq_len`: should be the same as in your dataset.
     - `train_partial`: `1` for the whole training set.
     - `model_name`
-        - `ShuttlePose_3_3`: **BST-0** in this paper.
-        - `BST_6_2`: **BST-1** in this paper.
-        - `BST_7`: **BST-2** in this paper.
-        - `BST_8`: **BST-3** in this paper.
+        - `ShuttlePose_3_3`: **<font color="red">BST-0</font>** in this paper.
+        - `BST_6_2`: **<font color="red">BST-1</font>** in this paper.
+        - `BST_7`: **<font color="red">BST-2</font>** in this paper.
+        - `BST_8`: **<font color="red">BST-3</font>** in this paper.
     - `in_channels`: `2` for 2D, `3` for 3D.
     - `model_info`: to distinguish your model weights.
     - `serial_no`: to distinguish your model weights when trying different initial weights.
