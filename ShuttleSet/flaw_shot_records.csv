@@ -4,7 +4,7 @@ match,set,rally,ball_round,stroke_type,reason,measure
 3,2,24,3,bottom_放小球,non-courtview,removed
 5,1,4,1,未知球種,time & frame_num not in order,modified
 5,1,9,1,未知球種,time & frame_num not in order,modified
-5,3,10,29,bottom_挑球,listed twice in original csv,removed
+5,3,10,29,bottom_挑球,listed twice in original csv,modified
 5,3,26,12,挑球,time & frame_num not in order,modified
 5,3,26,13,未知球種,time & frame_num not in order,modified
 7,1,2,1,未知球種,time & frame_num not in order,modified
