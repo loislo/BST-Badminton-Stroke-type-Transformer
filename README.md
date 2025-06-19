@@ -17,10 +17,10 @@ To the best of our knowledge, experimental results demonstrate that our method o
 ![Main Table 1](stroke_classification/results/main_result_1.png)
 
 ### Main Results (With Our Segmentation Strategy)
-<img src="stroke_classification/results/main_result_2.png" alt="Main Table 2" width="65%">
+<img src="stroke_classification/results/main_result_2.png" alt="Main Table 2" width="67%">
 
-### Results on 25% Training Set (Without Our Segmentation Strategy)
-<img src="stroke_classification/results/reduced_trainset_result.png" alt="25% Training Set Table" width="65%">
+### Results on (each class) 25% Training Set (Without Our Segmentation Strategy)
+<img src="stroke_classification/results/reduced_trainset_result.png" alt="25% Training Set Table" width="67%">
 
 ## Training Speed
 - On a NVIDIA RTX 4070 Ti Super setup, training **BST-3** takes 29 sec per epoch, while training **TemPose-TF** takes 31 sec per epoch.
