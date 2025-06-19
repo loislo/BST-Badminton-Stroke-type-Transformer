@@ -3,10 +3,68 @@
 
 [![Static Badge](https://img.shields.io/badge/Python-3.11-gray?labelColor=%234584B6)](https://www.python.org/downloads/) [![Static Badge](https://img.shields.io/badge/PyTorch-2.4.0%2Bcu121-gray?labelColor=%23EE4C2C)](https://pytorch.org/)
 
+## Abstract
+Badminton, known for having the fastest ball speeds among all sports, presents significant challenges to the field of computer vision, including player identification, court line detection, shuttlecock trajectory tracking, and player stroke-type classification.
+In this paper, we introduce a novel video segmentation strategy to extract frames of each player's racket swing in a badminton broadcast match.
+These segmented frames are then processed by two existing models: one for Human Pose Estimation to obtain player skeletal joints, and the other for shuttlecock trajectory detection to extract shuttlecock trajectories.
+Leveraging these joints, trajectories, and player positions as inputs, we propose Badminton Stroke-type Transformer (BST) to classify player stroke-types in singles.
+To the best of our knowledge, experimental results demonstrate that our method outperforms the previous state-of-the-art on the largest publicly available badminton video dataset, ShuttleSet, which shows that effectively leveraging ball trajectory is likely to be a trend for racket sports action recognition.
+
+**Keywords:** Deep learning, Transformer, Skeleton-based Action Recognition, Stroke classification, Badminton
+
+## Main Results
+
+
+## Results on 25% Training Set
+
 ## Training Speed
 - On a NVIDIA RTX 4070 Ti Super setup, training **BST-3** takes 29 sec per epoch, while training **TemPose-TF** takes 31 sec per epoch.
 - The following figure shows training **BST-3** converges faster than **TemPose-TF**:
-![Loss Curves](stroke_classification/tensorboard2pyplot/loss_curves.png)
+
+    ![Loss Curves](stroke_classification/tensorboard2pyplot/loss_curves.png)
+
+## Classes in this Modified ShuttleSet
+- `flaw_shot_records.csv` shows some errors in the original [ShuttleSet](https://github.com/wywyWang/CoachAI-Projects/tree/main/ShuttleSet).
+- After modifying the original [ShuttleSet](https://github.com/wywyWang/CoachAI-Projects/tree/main/ShuttleSet), remaining strokes are obtained and shown in the table below.
+- For more details, please see `class_total.xlsx`.
+
+    | Class ID | Num of Strokes | Player | 中文類別名稱 | Class Name |
+    | -------: | -----------: | :----: | :---------- | :--------- |
+    | 0        | 2982         | Top    | 放小球       | net shot   |
+    | 1        | 1618         | Top    | 擋小球       | return net |
+    | 2        | 1287         | Top    | 殺球         | smash      |
+    | 3        | 831          | Top    | 點扣         | wrist smash|
+    | 4        | 2343         | Top    | 挑球         | lob        |
+    | 5        | 123          | Top    | 防守回挑     | defensive return lob |
+    | 6        | 1309         | Top    | 長球         | clear      |
+    | 7        | 319          | Top    | 平球         | drive      |
+    | 8        | 234          | Top    | 後場抽平球   | back-court drive |
+    | 9        | 1036         | Top    | 切球         | drop       |
+    | 10       | 615          | Top    | 過渡切球     | passive drop |
+    | 11       | 1317         | Top    | 推球         | push       |
+    | 12       | 270          | Top    | 撲球         | rush       |
+    | 13       | 144          | Top    | 防守回抽     | defensive return drive |
+    | 14       | 606          | Top    | 勾球         | cross-court net shot |
+    | 15       | 904          | Top    | 發短球       | short service |
+    | 16       | 159          | Top    | 發長球       | long service |
+    | 17       | 2842         | Bottom | 放小球       | net shot   |
+    | 18       | 1756         | Bottom | 擋小球       | return net |
+    | 19       | 1075         | Bottom | 殺球         | smash      |
+    | 20       | 728          | Bottom | 點扣         | wrist smash|
+    | 21       | 2536         | Bottom | 挑球         | lob        |
+    | 22       | 155          | Bottom | 防守回挑     | defensive return lob |
+    | 23       | 1352         | Bottom | 長球         | clear      |
+    | 24       | 335          | Bottom | 平球         | drive      |
+    | 25       | 201          | Bottom | 後場抽平球   | back-court drive |
+    | 26       | 943          | Bottom | 切球         | drop       |
+    | 27       | 583          | Bottom | 過渡切球     | passive drop |
+    | 28       | 1335         | Bottom | 推球         | push       |
+    | 29       | 201          | Bottom | 撲球         | rush       |
+    | 30       | 238          | Bottom | 防守回抽     | defensive return drive |
+    | 31       | 620          | Bottom | 勾球         | cross-court net shot |
+    | 32       | 954          | Bottom | 發短球       | short service |
+    | 33       | 200          | Bottom | 發長球       | long service |
+    | 34       | 1278         | -      | 未知球種     | none       |
 
 ## Reproducing the Results
 ### Generating Stroke Clips
