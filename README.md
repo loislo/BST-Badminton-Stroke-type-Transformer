@@ -72,6 +72,18 @@ To the best of our knowledge, experimental results demonstrate that our method o
     | 34       | 1278         | -      | 未知球種     | none       |
 
 ## Reproducing the Results
+There are three main steps:
+1. [Generating Stroke Clips](#generating-stroke-clips)
+2. [Data Preprocessing](#data-preprocessing)
+3. [Training Classification Models](#training-classification-models)
+
+Since the process before training is time-consuming, I have provided the non-collated .npy files (use [step 3 in `stroke_classification/prepare_train.py`](#prepare_train) to collate these .npy files) in these folders:
+- (For `seq_len` set to `30`)
+    - [dataset_npy](https://drive.google.com/file/d/1Gcif3aLm6IIA3ZYQp3x-erQ71D2XG06e/view?usp=sharing)
+    - [dataset_npy_3d](https://drive.google.com/file/d/104BBFzTAQIJCj-pbA47OhJoNVMFGZlkP/view?usp=sharing)
+- (For `seq_len` set to `100`)
+    - [dataset_npy_between_2_hits_with_max_limits](https://drive.google.com/file/d/1joZBj4r4GNR5GFVsoWZKTfT9iUNkh_vt/view?usp=sharing)
+
 ### Generating Stroke Clips
 (In `ShuttleSet` folder)
 1. Download the videos from links in `set/match.csv` and put them into `raw_video` folder.
@@ -98,6 +110,7 @@ Thus, we have stroke clips now.
 2. Make sure your [MMPose](https://github.com/open-mmlab/mmpose/tree/main) works well.
     - Set your `venv_prepare_train` virtual environment first for running Human Pose Estimation (HPE) successfully.
     - See `prepare_train_env.txt` as an example based on my setup.
+<a id="prepare_train"></a>
 3. Run 1-3 steps in `prepare_train.py` individually.
     - Check data paths first.
     - For step 1: check the parameters are being passed into your shuttlecock tracking model.
@@ -119,6 +132,17 @@ Thus, we have collated .npy files now.
     - `in_channels`: `2` for 2D, `3` for 3D.
     - `model_info`: to distinguish your model weights.
     - `serial_no`: to distinguish your model weights when trying different initial weights.
+
+## Inference
+> [!WARNING]
+> Make sure your input data is normalized in the same way as in `stroke_classification/prepare_train.py`.
+> - `normalize_shuttlecock`
+>   - Normalized by the video resolution.
+> - `normalize_joints`
+>   - Normalized by the diagonal distance of the player's bounding box by default.
+>   - `center_align` default is `True`.
+> - `normalize_position`
+>   - Normalized by court boundary (in court coordinate, which is a rectangle).
 
 ## Citation
 ```
