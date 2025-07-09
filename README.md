@@ -96,7 +96,7 @@ Since the process before training is time-consuming, I have provided the non-col
     - `set_name`: train / val / test.
     - `type_ls`: each element should be the same class name as in ShuttleSet.
     - `strategy`: please check if it matches the `out_root_dir` or not.
-4. Move all clips in `Top_小平球` or `Bottom_小平球` to `未知球種`, which means "None" type, and delete these empty folders.
+4. Move all clips in `Top_小平球` or `Bottom_小平球` to `未知球種`, which means "none" type, and delete these empty folders.
 5. Remove all the clips labeled "removed" in `flaw_shot_records.csv`.
     - Make sure the total number of the clips each type is the same as that shown in `class_total.xlsx`.
 
