@@ -138,11 +138,17 @@ Thus, we have collated .npy files now.
 > Make sure your input data is normalized in the same way as in `stroke_classification/prepare_train.py`.
 > - `normalize_shuttlecock`
 >   - Normalized by the video resolution.
+>   - Each element is in the range [0, 1].
 > - `normalize_joints`
+>   - Use relative coordinates within the player's bounding box, with its top-left corner as the origin.
 >   - Normalized by the diagonal distance of the player's bounding box by default.
->   - `center_align` default is `True`.
+>   - `center_align` default is `True`. $\Rightarrow$ Make the center of the bounding box to be the new origin.
+>   - Each element is in the range [-0.X, 0.X].
 > - `normalize_position`
+>   - Convert the points of feet from camera coordinates to court coordinates.
+>   - Calculate the midpoint between them.
 >   - Normalized by court boundary (in court coordinate, which is a rectangle).
+>   - Each element is in the range [0, 1].
 
 ## Citation
 ```
