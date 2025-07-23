@@ -26,7 +26,7 @@ To the best of our knowledge, experimental results demonstrate that our method o
 - On a NVIDIA RTX 4070 Ti Super setup, training **BST-3** takes 29 sec per epoch, while training **TemPose-TF** takes 31 sec per epoch.
 - The following figure shows training **BST-3** converges faster than **TemPose-TF**:
 
-    ![Loss Curves](stroke_classification/tensorboard2pyplot/loss_curves.png)
+    <img src="stroke_classification/tensorboard2pyplot/loss_curves.png" alt="Loss Curves" width="71%">
 
 ## Classes in this Modified ShuttleSet
 - `flaw_shot_records.csv` shows some errors in the original [ShuttleSet](https://github.com/wywyWang/CoachAI-Projects/tree/main/ShuttleSet).
