@@ -34,13 +34,12 @@ class MultiHeadCrossAttention(nn.Module):
         kv: Tensor = self.to_kv(x2)
         b, t, _ = q.shape
 
-        q = q.view(b, t, self.h, -1).transpose(1, 2).contiguous()
-        kv = kv.view(b, t, self.h, 2, -1).transpose(1, 2)
-        k_T = kv[:, :, :, 0, :].transpose(-1, -2).contiguous()
-        v = kv[:, :, :, 1, :].contiguous()
+        q = q.view(b, t, self.h, -1).transpose(1, 2)
+        kv = kv.view(b, t, self.h, -1).chunk(2, dim=-1)
+        k, v = map(lambda ts: ts.transpose(1, 2), kv)
         # q, k, v: (b, h, t, d_head)
 
-        dots: Tensor = (q @ k_T) * self.scale
+        dots: Tensor = (q.contiguous() @ k.transpose(-1, -2).contiguous()) * self.scale
         # dots: (b, h, t, t)
         if mask is not None:
             # mask: (b, t)
@@ -48,7 +47,7 @@ class MultiHeadCrossAttention(nn.Module):
             dots = dots.masked_fill(mask == 0.0, -torch.inf)
         
         coef = self.attend(dots)
-        attension: Tensor = coef @ v
+        attension: Tensor = coef @ v.contiguous()
         # attension: (b, h, t, d_head)
 
         out = attension.transpose(1, 2).reshape(b, t, -1)

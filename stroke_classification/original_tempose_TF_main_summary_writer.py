@@ -2,6 +2,7 @@ import torch
 from torch import Tensor, nn, optim
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
 from torcheval.metrics.functional import multiclass_f1_score
 
 from transformers import get_cosine_schedule_with_warmup
@@ -15,9 +16,7 @@ from datetime import timedelta
 
 from dataset import get_bone_pairs, prepare_npy_collated_loaders, \
                     RandomTranslation_batch, Dataset_npy
-from shuttlepose import ShuttlePose, ShuttlePose_2, ShuttlePose_3, ShuttlePose_3_2, \
-                        ShuttlePose_3_3, ShuttlePose_4, ShuttlePose_5, ShuttlePose_5_1, \
-                        ShuttlePose_6
+from original_tempose import TemPoseII_TF
 from utils import show_f1_results, plot_confusion_matrix
 
 
@@ -51,6 +50,7 @@ def train_one_epoch(
 
     for (human_pose, pos, shuttle), video_len, labels in loader:
         human_pose: Tensor = human_pose.to(device)
+        pos: Tensor = pos.to(device)
         shuttle: Tensor = shuttle.to(device)
         video_len: Tensor = video_len.to(device)
         labels: Tensor = labels.to(device)
@@ -64,8 +64,10 @@ def train_one_epoch(
             joints = random_shift_fn(joints)
             human_pose = torch.cat([joints, bones], dim=-2)
 
-        human_pose = human_pose.view(*human_pose.shape[:-2], -1)
-        logits = model(human_pose, shuttle, video_len)
+        human_pose = human_pose.flatten(start_dim=-2).transpose(1, 2).contiguous()
+        sp = torch.concat((pos.flatten(start_dim=2), shuttle), dim=-1)
+
+        logits = model(human_pose, sp, video_len)
         loss: Tensor = loss_fn(logits, labels)
 
         optimizer.zero_grad()
@@ -95,12 +97,15 @@ def validate(
 
     for (human_pose, pos, shuttle), video_len, labels in loader:
         human_pose: Tensor = human_pose.to(device)
+        pos: Tensor = pos.to(device)
         shuttle: Tensor = shuttle.to(device)
         video_len: Tensor = video_len.to(device)
         labels: Tensor = labels.to(device)
 
-        human_pose = human_pose.view(*human_pose.shape[:-2], -1)  # for faster dataset version
-        logits = model(human_pose, shuttle, video_len)
+        human_pose = human_pose.flatten(start_dim=-2).transpose(1, 2).contiguous()
+        sp = torch.concat((pos.flatten(start_dim=2), shuttle), dim=-1)
+
+        logits = model(human_pose, sp, video_len)
         loss: Tensor = loss_fn(logits, labels)
         total_loss += loss.item()
 
@@ -142,11 +147,14 @@ def test(
     labels_ls = []
     for (human_pose, pos, shuttle), video_len, labels in loader:
         human_pose: Tensor = human_pose.to(device)
+        pos: Tensor = pos.to(device)
         shuttle: Tensor = shuttle.to(device)
         video_len: Tensor = video_len.to(device)
 
-        human_pose = human_pose.view(*human_pose.shape[:-2], -1)
-        logits = model(human_pose, shuttle, video_len)
+        human_pose = human_pose.flatten(start_dim=-2).transpose(1, 2).contiguous()
+        sp = torch.concat((pos.flatten(start_dim=2), shuttle), dim=-1)
+
+        logits = model(human_pose, sp, video_len)
 
         pred = torch.argmax(logits, dim=1).cpu()
         
@@ -168,11 +176,14 @@ def test_topk(
     labels_ls = []
     for (human_pose, pos, shuttle), video_len, labels in loader:
         human_pose: Tensor = human_pose.to(device)
+        pos: Tensor = pos.to(device)
         shuttle: Tensor = shuttle.to(device)
         video_len: Tensor = video_len.to(device)
 
-        human_pose = human_pose.view(*human_pose.shape[:-2], -1)
-        logits = model(human_pose, shuttle, video_len)
+        human_pose = human_pose.flatten(start_dim=-2).transpose(1, 2).contiguous()
+        sp = torch.concat((pos.flatten(start_dim=2), shuttle), dim=-1)
+
+        logits = model(human_pose, sp, video_len)
 
         _, pred = torch.topk(logits, k=k, dim=1)
         
@@ -190,6 +201,8 @@ def train_network(
     save_path: Path,
     n_bones
 ):
+    writer = SummaryWriter()
+
     random_shift_fn = RandomTranslation_batch()
 
     loss_fn = nn.CrossEntropyLoss(label_smoothing=0.1)
@@ -226,6 +239,9 @@ def train_network(
         print(f'Epoch({epoch}/{hyp.n_epochs}): train_loss={train_loss:.3f}, '\
               f'val_loss={val_loss:.3f}, macro_f1={f1_score_avg:.3f}, min_f1={f1_score_min:.3f} '\
               f'- {t1 - t0:.2f} s')
+
+        writer.add_scalar('Loss/Train', train_loss, epoch)
+        writer.add_scalar('Loss/Val', val_loss, epoch)
 
         early_stop_count += 1
         if best_value < f1_score_avg:
@@ -272,15 +288,7 @@ class Task:
     def get_network_architecture(self, model_name, in_channels=2):
         '''
         `model_name`
-        - 'ShuttlePose' (about 1.70M)
-        - 'ShuttlePose_2' (about 1.73M)
-        - 'ShuttlePose_3' (about 1.78M)
-        - 'ShuttlePose_3_2' (about 1.75M)
-        - 'ShuttlePose_3_3' (about 1.83M)
-        - 'ShuttlePose_4' (about 1.83M)
-        - 'ShuttlePose_5' (about 1.85M)
-        - 'ShuttlePose_5_1' (about 1.85M)
-        - 'ShuttlePose_6' (about 1.79M)
+        - 'original_TemPose_TF' (about 1.72M)
         '''
         n_bones = len(get_bone_pairs())
 
@@ -293,85 +301,17 @@ class Task:
                 extra = 2
 
         match model_name:
-            case 'ShuttlePose':
-                net = ShuttlePose(
-                    in_dim=(self.n_joints + n_bones * extra) * in_channels,
-                    n_class=hyp.n_classes,
-                    seq_len=hyp.seq_len,
-                    depth_tem=2,
-                    depth_inter=1
-                )
-
-            case 'ShuttlePose_2':
-                net = ShuttlePose_2(
-                    in_dim=(self.n_joints + n_bones * extra) * in_channels,
-                    n_class=hyp.n_classes,
-                    seq_len=hyp.seq_len,
-                    depth_tem=2,
-                    depth_inter=1
-                )
-
-            case 'ShuttlePose_3':
-                net = ShuttlePose_3(
-                    in_dim=(self.n_joints + n_bones * extra) * in_channels,
-                    n_class=hyp.n_classes,
-                    seq_len=hyp.seq_len,
-                    depth_tem=2,
-                    depth_inter=1
-                )
-
-            case 'ShuttlePose_3_2':
-                net = ShuttlePose_3_2(
-                    in_dim=(self.n_joints + n_bones * extra) * in_channels,
-                    n_class=hyp.n_classes,
-                    seq_len=hyp.seq_len,
-                    depth_tem=2,
-                    depth_inter=1
-                )
-
-            case 'ShuttlePose_3_3':
-                net = ShuttlePose_3_3(
-                    in_dim=(self.n_joints + n_bones * extra) * in_channels,
-                    n_class=hyp.n_classes,
-                    seq_len=hyp.seq_len,
-                    depth_tem=2,
-                    depth_inter=1
-                )
-
-            case 'ShuttlePose_4':
-                net = ShuttlePose_4(
-                    in_dim=(self.n_joints + n_bones * extra) * in_channels,
-                    n_class=hyp.n_classes,
-                    seq_len=hyp.seq_len,
-                    depth_tem=2,
-                    depth_inter=1
-                )
-
-            case 'ShuttlePose_5':
-                net = ShuttlePose_5(
-                    in_dim=(self.n_joints + n_bones * extra) * in_channels,
-                    n_class=hyp.n_classes,
-                    seq_len=hyp.seq_len,
-                    depth_tem=2,
-                    depth_inter=1
-                )
-
-            case 'ShuttlePose_5_1':
-                net = ShuttlePose_5_1(
-                    in_dim=(self.n_joints + n_bones * extra) * in_channels,
-                    n_class=hyp.n_classes,
-                    seq_len=hyp.seq_len,
-                    depth_tem=2,
-                    depth_inter=1
-                )
-
-            case 'ShuttlePose_6':
-                net = ShuttlePose_6(
-                    in_dim=(self.n_joints + n_bones * extra) * in_channels,
-                    n_class=hyp.n_classes,
-                    seq_len=hyp.seq_len,
-                    depth_tem=2,
-                    depth_inter=1
+            case 'original_TemPose_TF':
+                net = TemPoseII_TF(
+                    poses_numbers=(self.n_joints + n_bones * extra) * in_channels,
+                    time_steps=hyp.seq_len,
+                    num_people=2,
+                    num_classes=hyp.n_classes,
+                    dim=100,
+                    depth=2,
+                    depth_int=2,
+                    dim_head=128,
+                    emb_dropout=0.3
                 )
 
             case _:
@@ -386,9 +326,12 @@ class Task:
         model_info = f'_{model_info}' if model_info != '' else ''
         model_postfix = '_' + self.pose_style + model_info + serial_str
 
-        self.model_name = self.model_name.lower() + model_postfix
+        first_name, last_name = self.model_name.rsplit('_', maxsplit=1)
+        save_name = first_name.lower() + '_' + last_name \
+                    + model_postfix
+        self.model_name += model_postfix
 
-        weight_path = Path(f'weight/{self.model_name}.pt')
+        weight_path = Path(f'weight/{save_name}.pt')
         if weight_path.exists():
             self.net.load_state_dict(torch.load(str(weight_path), map_location=self.device, weights_only=True))
         else:
@@ -470,7 +413,7 @@ if __name__ == '__main__':
         pose_style='JnB_bone',
         train_partial=1
     )
-    task.get_network_architecture(model_name='ShuttlePose_3_3', in_channels=2)
+    task.get_network_architecture(model_name='original_TemPose_TF', in_channels=2)
     task.seek_network_weights(model_info='between_2_hits_with_max_limits_seq_100', serial_no=1)
     task.test(show_details=False, show_confusion_matrix=False)
     task.test_topk_acc(k=2)

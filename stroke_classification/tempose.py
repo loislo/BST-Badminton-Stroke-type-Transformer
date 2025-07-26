@@ -9,6 +9,7 @@ from torch import nn, Tensor
 from positional_encodings.torch_encodings import PositionalEncoding1D
 from torchinfo import summary
 
+from einops import rearrange
 
 class MLP(nn.Module):
     '''Same as MLP_Block in TemPose paper.'''
@@ -73,16 +74,14 @@ class MultiHeadAttention(nn.Module):
 
     def forward(self, x: Tensor, mask: Tensor = None):
         # x: (b*n, t, d_model)
-        qkv: Tensor = self.to_qkv(x)
-        bn, t, _ = qkv.shape
-        qkv = qkv.view(bn, t, self.h, 3, -1).transpose(1, 2)
+        bn, t, _ = x.shape
 
-        q = qkv[:, :, :, 0, :].contiguous()
-        k_T = qkv[:, :, :, 1, :].transpose(-2, -1).contiguous()
-        v = qkv[:, :, :, 2, :].contiguous()
+        qkv: Tensor = self.to_qkv(x)
+        qkv = qkv.view(bn, t, self.h, -1).chunk(3, dim=-1)
+        q, k, v = map(lambda ts: ts.transpose(1, 2), qkv)
         # q, k, v: (bn, h, t, d_head)
 
-        dots: Tensor = (q @ k_T) * self.scale
+        dots: Tensor = (q.contiguous() @ k.transpose(-1, -2).contiguous()) * self.scale
         # dots: (bn, h, t, t)
         if mask is not None:
             # mask: (bn, t)
@@ -90,7 +89,7 @@ class MultiHeadAttention(nn.Module):
             dots = dots.masked_fill(mask == 0.0, -torch.inf)
         
         coef = self.attend(dots)
-        attension: Tensor = coef @ v
+        attension: Tensor = coef @ v.contiguous()
         # attension: (bn, h, t, d_head)
         
         out = attension.transpose(1, 2).reshape(bn, t, -1)
@@ -810,13 +809,14 @@ class TemPose2_TF(nn.Module):
 
 
 if __name__ == '__main__':
-    n_features = (17 + 19 * 2) * 2
-    pose = torch.randn((1, 30, 2, n_features), dtype=torch.float)
-    pos = torch.randn((1, 30, 2, 2), dtype=torch.float)
-    shuttle = torch.randn((1, 30, 2), dtype=torch.float)
-    videos_len = torch.tensor([30])
+    b, t, n = 3, 30, 2
+    n_features = (17 + 19 * 1) * n
+    pose = torch.randn((b, t, n, n_features), dtype=torch.float)
+    pos = torch.randn((b, t, n, 2), dtype=torch.float)
+    shuttle = torch.randn((b, t, 2), dtype=torch.float)
+    videos_len = torch.tensor([t], dtype=torch.long).repeat(b)
     input_data = [pose, pos, shuttle, videos_len]
-    model = TemPose2_TF(
+    model = TemPose_TF(
         in_dim=n_features,
         seq_len=30,
         n_class=35,
