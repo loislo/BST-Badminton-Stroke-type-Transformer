@@ -180,10 +180,10 @@ class TemPoseII_TF(nn.Module):
     def initialize_weights(self):
         # initialization
         # initialize (and freeze) pos_embed by sin-cos embedding
- 
+
         temp_embed = repeat(torch.from_numpy(get_2d_sincos_pos_embed(self.temporal_embedding.shape[-1], int(self.time_sequence), cls_token=True)).float().unsqueeze(0),'() t d -> n t d', n=self.people)
         self.temporal_embedding.data.copy_(temp_embed.unsqueeze(0))
-       
+
         int_embed = get_2d_sincos_pos_embed(self.interaction_embedding.shape[-1], self.people, cls_token=True)
         self.interaction_embedding.data.copy_(torch.from_numpy(int_embed).float().unsqueeze(0))
         
@@ -245,7 +245,7 @@ class TemPoseII_TF(nn.Module):
         x = x.mean(dim=1) if self.pool == 'mean' else x[:, 0]
         # x: (b, dim)
         return self.mlp_head(x)
-    
+
     def predict(self, x, sp, pad=None):
         # Apply softmax to output. 
         pred = F.softmax(self.forward(x, sp, pad), dim=1).max(1)[1].cpu()

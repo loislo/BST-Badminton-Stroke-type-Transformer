@@ -9,7 +9,6 @@ from torch import nn, Tensor
 from positional_encodings.torch_encodings import PositionalEncoding1D
 from torchinfo import summary
 
-from einops import rearrange
 
 class MLP(nn.Module):
     '''Same as MLP_Block in TemPose paper.'''

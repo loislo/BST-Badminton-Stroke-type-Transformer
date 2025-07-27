@@ -23,10 +23,13 @@ To the best of our knowledge, experimental results demonstrate that our method o
 <img src="stroke_classification/results/reduced_trainset_result.png" alt="25% Training Set Table" width="71%">
 
 ## Training Speed
-- On an NVIDIA RTX 4090 setup, **BST-3** trains in 9.7 seconds per epoch, while **TemPose-TF** and **TemPose-TF(original)** take 10 and 11 seconds per epoch, respectively.
+- On an NVIDIA RTX 4090 setup and `seq_len` set to `100`, **BST-3** trains in 9.7 seconds per epoch, while **TemPose-TF** and **TemPose-TF(original)** take 10 and 11 seconds per epoch, respectively.
 - The following figure shows training **BST-3** converges faster than **TemPose-TF**:
 
     <img src="stroke_classification/tensorboard2pyplot/loss_curves.png" alt="Loss Curves" width="80%">
+
+> [!NOTE]
+> TemPose-TF(original), the official implementation from TemPose's authors, uses the same TCN object to handle player positions and shuttlecock, so it causes the performance gap compared to TemPose-TF.
 
 ## Classes in this Modified ShuttleSet
 - `flaw_shot_records.csv` shows some errors in the original [ShuttleSet](https://github.com/wywyWang/CoachAI-Projects/tree/main/ShuttleSet).
