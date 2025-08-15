@@ -236,7 +236,7 @@ if __name__ == "__main__":
 
     for vid in vids_selected:
         v_info = v_df.loc[vid]
-        # print(v_info)
+        print(f"Video Info: {v_info}")
         shots_df = collect_shot_types_pos(v_info, player, type_ls)
         
         if len(shots_df) != 0:
