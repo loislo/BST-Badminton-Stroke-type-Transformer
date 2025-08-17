@@ -1,9 +1,12 @@
+#!/usr/bin/env python3
+import os
 from utils import *
 
 import moviepy.editor as mpe
 import pandas as pd
 import numpy as np
 from pathlib import Path
+import argparse
 
 
 def get_video_df():
@@ -74,7 +77,7 @@ def collect_shot_types_pos(
     return pd.concat(sets_collected_ls).reset_index(drop=True)
 
 
-def set_between_2_hits_from_pos(shots_df: pd.DataFrame):
+def set_between_2_hits_from_pos(v_info: pd.Series, shots_df: pd.DataFrame):
     folder_path: Path = Path('set')/v_info['video']
 
     new_df_ls = []
@@ -167,10 +170,14 @@ def gen_shot_videos_from_1_src(
                 clip.write_videofile(output_path)
 
         case 'between_2_hits_with_max_limits':
+            total_frames = int(video.duration * video.fps)
+            print(f"Total frames in video: {total_frames} {video_path}")
             limit = video.fps * 3 // 2  # num frames in 1.5 sec
             eps = t // 2  # num frames in 0.25 sec
+
             for row in shots_df.itertuples(index=False):
                 frame_num = int(row.frame_num)
+                print(f"Processing shot at frame number: {frame_num}")
                 start_f = int(row.start_f) if row.start_f != -1 else (frame_num - t)
                 end_f = int(row.end_f) + eps if row.end_f != -1 else (frame_num + t)
 
@@ -180,11 +187,16 @@ def gen_shot_videos_from_1_src(
                 if end_f > frame_num + limit + eps:
                     end_f = frame_num + limit + eps
 
+                print(f"start_f: {start_f}, end_f: {end_f}")
+                print(f"from file: {video_path} with {total_frames} frames")
+                output_path = str(out_folder/f"{player}_{row.type}/{v_info.name}_{row.set}_{row.rally}_{int(row.ball_round)}.mp4")
+                if os.path.exists(output_path):
+                    print(f"File {output_path} already exists. Skipping...")
+                    continue
                 clip: mpe.VideoClip = video.subclip(
                     frameNum_2_time(start_f, fps=video.fps),
                     frameNum_2_time(end_f, fps=video.fps)
                 )
-                output_path = str(out_folder/f"{player}_{row.type}/{v_info.name}_{row.set}_{row.rally}_{int(row.ball_round)}.mp4")
                 clip.write_videofile(output_path)
 
         case _:
@@ -208,25 +220,41 @@ def gen_shot_videos_from_1_src(
     # cap.release()
     
 
-if __name__ == "__main__":
+def gen_shot_videos(side: str = 'Top', dataset: str = 'train'):
     out_root_dir = Path('shuttle_set_between_2_hits_with_max_limits')
 
+    print(f"Generating videos for {side} player in {dataset} dataset...")
+
     v_df = get_video_df()
-    # print(v_df)
+    print(v_df)
+
     vids_train = list(range(1, 9)) + [11] + list(range(13, 27)) + list(range(28, 35))
     vids_val = list(range(35, 39)) + [41]
     vids_test = [39, 40, 42, 43, 44]
 
-    player = 'Bottom'  # Top / Bottom
-    set_name = 'test'  # train / val / test
-
     type_ls = [
-        '放小球', '擋小球', '殺球', '點扣', '挑球', '防守回挑',
-        '長球', '平球', '小平球', '後場抽平球', '切球', '過渡切球', '推球',
-        '撲球', '防守回抽', '勾球', '發短球', '發長球', '未知球種'
+        '放小球', # net-shot
+        '擋小球', # return net
+        '殺球', # smash
+        '點扣', # wrist-smash
+        '挑球', # lob
+        '防守回挑', # defensive return lob
+        '長球', # clear
+        '平球', # drive
+        '小平球', # small drive
+        '後場抽平球', # backcourt drive
+        '切球', # drop
+        '過渡切球', # passive drop
+        '推球', # push
+        '撲球', # rush
+        '防守回抽', # defensive return drive
+        '勾球', # cross-court net shot
+        '發短球', # short serve
+        '發長球', # long serve
+        '未知球種' # none
     ]
 
-    match set_name:
+    match dataset:
         case 'train':
             vids_selected = vids_train
         case 'val':
@@ -234,13 +262,15 @@ if __name__ == "__main__":
         case 'test':
             vids_selected = vids_test
 
+    print(f"Selected videos: {vids_selected}")
+
     for vid in vids_selected:
         v_info = v_df.loc[vid]
         print(f"Video Info: {v_info}")
-        shots_df = collect_shot_types_pos(v_info, player, type_ls)
+        shots_df = collect_shot_types_pos(v_info, side, type_ls)
         
         if len(shots_df) != 0:
-            shots_df = set_between_2_hits_from_pos(shots_df)
+            shots_df = set_between_2_hits_from_pos(v_info=v_info, shots_df=shots_df)
             # with pd.option_context('display.max_rows', None):
             #     print(shots_df)
             gen_shot_videos_from_1_src(
@@ -248,7 +278,15 @@ if __name__ == "__main__":
                 v_info=v_info,
                 shots_df=shots_df,
                 strategy='between_2_hits_with_max_limits',
-                player=player,
-                set_name=set_name,
+                player=side,
+                set_name=dataset,
                 type_ls=type_ls
             )
+
+if __name__ == "__main__":
+    gen_shot_videos(side='Top', dataset='train')
+    gen_shot_videos(side='Top', dataset='val')
+    gen_shot_videos(side='Top', dataset='test')
+    gen_shot_videos(side='Bottom', dataset='train')
+    gen_shot_videos(side='Bottom', dataset='val')
+    gen_shot_videos(side='Bottom', dataset='test')
